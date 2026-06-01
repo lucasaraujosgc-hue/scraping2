@@ -1,0 +1,6 @@
+{
+  "name": "AutoFiscal",
+  "description": "Sistema de Automação Fiscal, Scraping e Gestão de Certificados Digitais.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

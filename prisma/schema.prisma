@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("USER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  auditLogs AuditLog[]
+}
+
+model Company {
+  id                 String              @id @default(uuid())
+  razaoSocial        String
+  nomeFantasia       String
+  cnpj               String              @unique
+  inscricaoEstadual  String?
+  inscricaoMunicipal String?
+  email              String?
+  telefone           String?
+  observacoes        String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  customValues       CompanyCustomValue[]
+  certificates       CompanyCertificate[]
+  executions         Execution[]
+  documents          Document[]
+}
+
+model CompanyCustomField {
+  id          String   @id @default(uuid())
+  name        String
+  type        String   // string, number, password
+  description String?
+  createdAt   DateTime @default(now())
+  values      CompanyCustomValue[]
+}
+
+model CompanyCustomValue {
+  id        String             @id @default(uuid())
+  companyId String
+  fieldId   String
+  value     String
+  company   Company            @relation(fields: [companyId], references: [id])
+  field     CompanyCustomField @relation(fields: [fieldId], references: [id])
+
+  @@unique([companyId, fieldId])
+}
+
+model Certificate {
+  id                   String               @id @default(uuid())
+  fileName             String
+  data                 Bytes                // Encrypted PFX data
+  password             String               // Encrypted password
+  titular              String
+  cpfCnpj              String
+  numeroSerie          String
+  autoridade           String
+  emissao              DateTime
+  vencimento           DateTime
+  tipoPessoa           String               // PF or PJ
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  companyCertificates  CompanyCertificate[]
+}
+
+model CompanyCertificate {
+  id            String      @id @default(uuid())
+  companyId     String
+  certificateId String
+  isDefault     Boolean     @default(false)
+  company       Company     @relation(fields: [companyId], references: [id])
+  certificate   Certificate @relation(fields: [certificateId], references: [id])
+
+  @@unique([companyId, certificateId])
+}
+
+model Scraper {
+  id               String              @id @default(uuid())
+  name             String
+  description      String?
+  useCertificate   Boolean             @default(false)
+  steps            Json                // Flowchart definition
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  groupItems       ScraperGroupItem[]
+  executions       Execution[]
+}
+
+model ScraperGroup {
+  id          String             @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime           @default(now())
+  items       ScraperGroupItem[]
+  executions  Execution[]
+  schedules   Schedule[]
+}
+
+model ScraperGroupItem {
+  id        String       @id @default(uuid())
+  groupId   String
+  scraperId String
+  order     Int
+  group     ScraperGroup @relation(fields: [groupId], references: [id])
+  scraper   Scraper      @relation(fields: [scraperId], references: [id])
+}
+
+model Execution {
+  id        String        @id @default(uuid())
+  companyId String
+  scraperId String?
+  groupId   String?
+  status    String        // PENDING, RUNNING, SUCCESS, FAILED
+  startedAt DateTime?
+  endedAt   DateTime?
+  company   Company       @relation(fields: [companyId], references: [id])
+  scraper   Scraper?      @relation(fields: [scraperId], references: [id])
+  group     ScraperGroup? @relation(fields: [groupId], references: [id])
+  logs      ExecutionLog[]
+  documents Document[]
+}
+
+model ExecutionLog {
+  id          String    @id @default(uuid())
+  executionId String
+  level       String    // INFO, WARN, ERROR
+  message     String
+  createdAt   DateTime  @default(now())
+  execution   Execution @relation(fields: [executionId], references: [id])
+}
+
+model Schedule {
+  id             String       @id @default(uuid())
+  name           String
+  cronExpression String
+  groupId        String
+  createdAt      DateTime     @default(now())
+  group          ScraperGroup @relation(fields: [groupId], references: [id])
+}
+
+model Document {
+  id          String             @id @default(uuid())
+  companyId   String
+  executionId String?
+  fileName    String
+  filePath    String
+  type        String             // CND, RECIBO, EXTRATO, etc
+  portal      String?
+  hashSha256  String
+  validade    DateTime?
+  createdAt   DateTime           @default(now())
+  company     Company            @relation(fields: [companyId], references: [id])
+  execution   Execution?         @relation(fields: [executionId], references: [id])
+  metadata    DocumentMetadata[]
+}
+
+model DocumentMetadata {
+  id         String   @id @default(uuid())
+  documentId String
+  key        String
+  value      String
+  document   Document @relation(fields: [documentId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  details   Json
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
