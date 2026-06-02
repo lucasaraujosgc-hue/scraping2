@@ -8,37 +8,102 @@ import {
   useEdgesState,
   addEdge,
   Panel,
+  Handle,
+  Position
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { ArrowLeft, Play, Save, CheckCircle2, MonitorPlay, MousePointerClick, X, Globe, Copy, RefreshCcw, Download, FileCode2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Play, Save, CheckCircle2, MonitorPlay, MousePointerClick, X, Globe, Copy, RefreshCcw, Download, FileCode2, ShieldCheck, Edit, Trash2 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { useAppStore } from '../store';
 
-const initialNodes = [
-  { id: '1', position: { x: 50, y: 50 }, data: { label: 'Iniciar RPA' }, type: 'input' },
-  { id: '2', position: { x: 50, y: 150 }, data: { label: 'Abrir URL' } },
-  { id: '3', position: { x: 50, y: 250 }, data: { label: 'Aguardar (Pausa)' } },
-  { id: '4', position: { x: 50, y: 350 }, data: { label: 'Preencher: {{cnpj}}' } },
-  { id: '5', position: { x: 50, y: 450 }, data: { label: 'Intervenção: Captcha' } },
-  { id: '6', position: { x: 50, y: 550 }, data: { label: 'Baixar PDF' }, type: 'output' },
-];
+const RPANode = ({ id, data, isConnectable }: any) => {
+  return (
+    <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 shadow-lg min-w-[200px] relative group text-left">
+      <Handle type="target" position={Position.Top} isConnectable={isConnectable} className="w-2 h-2 !bg-indigo-500" />
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-slate-200 font-medium">{data.label}</span>
+      </div>
+      <div className="absolute -top-3 -right-3 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+         <button className="bg-slate-800 p-1.5 rounded-full border border-slate-700 text-indigo-400 hover:bg-slate-700 transition" onClick={() => data.onEdit(id)}>
+           <Edit className="w-3.5 h-3.5" />
+         </button>
+         <button className="bg-slate-800 p-1.5 rounded-full border border-slate-700 text-rose-400 hover:bg-slate-700 transition" onClick={() => data.onDelete(id)}>
+           <Trash2 className="w-3.5 h-3.5" />
+         </button>
+      </div>
+      <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} className="w-2 h-2 !bg-indigo-500" />
+    </div>
+  );
+};
 
-const initialEdges = [
-  { id: 'e1-2', source: '1', target: '2' },
-  { id: 'e2-3', source: '2', target: '3' },
-  { id: 'e3-4', source: '3', target: '4' },
-  { id: 'e4-5', source: '4', target: '5' },
-  { id: 'e5-6', source: '5', target: '6' },
-];
+const nodeTypes = {
+  rpaNode: RPANode,
+};
 
 export default function VisualBuilder() {
   const { id } = useParams();
   const getScraperName = useAppStore(state => state.scrapers.find(s => s.id === id)?.name) || 'Novo Scraper';
-  
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [saved, setSaved] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+
+  const handleTestMacro = async () => {
+    setIsRunning(true);
+    try {
+      const response = await fetch('/api/run-macro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nodes, edges })
+      });
+      const data = await response.json();
+      console.log('Macro start response:', data);
+      alert('Macro iniciada em background!');
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao iniciar macro');
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  const onEditNode = useCallback((nodeId: string) => {
+    setNodes((nds) => 
+      nds.map((n) => {
+        if (n.id === nodeId) {
+          const newLabel = window.prompt('Editar nome da ação:', n.data.label);
+          if (newLabel) {
+            return { ...n, data: { ...n.data, label: newLabel } };
+          }
+        }
+        return n;
+      })
+    );
+  }, []);
+
+  const onDeleteNode = useCallback((nodeId: string) => {
+    setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+    setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+  }, []);
+
+  const initialNodes = [
+    { id: '1', position: { x: 50, y: 50 }, data: { label: 'Iniciar RPA', onEdit: onEditNode, onDelete: onDeleteNode }, type: 'rpaNode' },
+    { id: '2', position: { x: 50, y: 150 }, data: { label: 'Abrir URL', onEdit: onEditNode, onDelete: onDeleteNode }, type: 'rpaNode' },
+    { id: '3', position: { x: 50, y: 250 }, data: { label: 'Aguardar (Pausa)', onEdit: onEditNode, onDelete: onDeleteNode }, type: 'rpaNode' },
+    { id: '4', position: { x: 50, y: 350 }, data: { label: 'Preencher: {{cnpj}}', onEdit: onEditNode, onDelete: onDeleteNode }, type: 'rpaNode' },
+    { id: '5', position: { x: 50, y: 450 }, data: { label: 'Intervenção: Captcha', onEdit: onEditNode, onDelete: onDeleteNode }, type: 'rpaNode' },
+    { id: '6', position: { x: 50, y: 550 }, data: { label: 'Baixar PDF', onEdit: onEditNode, onDelete: onDeleteNode }, type: 'rpaNode' },
+  ];
+
+  const initialEdges = [
+    { id: 'e1-2', source: '1', target: '2' },
+    { id: 'e2-3', source: '2', target: '3' },
+    { id: 'e3-4', source: '3', target: '4' },
+    { id: 'e4-5', source: '4', target: '5' },
+    { id: 'e5-6', source: '5', target: '6' },
+  ];
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const onConnect = useCallback(
     (params: any) => setEdges((eds) => addEdge(params, eds)),
@@ -51,12 +116,12 @@ export default function VisualBuilder() {
   };
 
   const addNode = (label: string) => {
-    // find max Y to place it at the bottom
     const maxY = nodes.reduce((max, node) => Math.max(max, node.position.y), 0);
     const newNode = {
       id: `node-${Date.now()}`,
       position: { x: 50, y: maxY + 100 },
-      data: { label },
+      data: { label, onEdit: onEditNode, onDelete: onDeleteNode },
+      type: 'rpaNode'
     };
     
     // Auto-connect to the last node
@@ -67,20 +132,6 @@ export default function VisualBuilder() {
     
     setNodes((nds) => nds.concat(newNode));
   };
-
-  const onNodeDoubleClick = useCallback((event: any, node: any) => {
-    const newLabel = window.prompt('Editar nome da ação:', node.data.label);
-    if (newLabel) {
-      setNodes((nds) => 
-        nds.map((n) => {
-          if (n.id === node.id) {
-            return { ...n, data: { ...n.data, label: newLabel } };
-          }
-          return n;
-        })
-      );
-    }
-  }, [setNodes]);
 
   return (
     <div className="h-full flex flex-col pt-0 bg-slate-950 relative">
@@ -114,9 +165,9 @@ export default function VisualBuilder() {
             <Save className="w-4 h-4 mr-2" />
             Salvar
           </button>
-          <button className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition">
-            <Play className="w-4 h-4 mr-2" />
-            Testar
+          <button onClick={handleTestMacro} disabled={isRunning} className={`inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition ${isRunning ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            {isRunning ? <RefreshCcw className="w-4 h-4 mr-2 animate-spin" /> : <Play className="w-4 h-4 mr-2" />}
+            {isRunning ? 'Executando...' : 'Testar'}
           </button>
         </div>
       </div>
@@ -130,7 +181,7 @@ export default function VisualBuilder() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
-            onNodeDoubleClick={onNodeDoubleClick}
+            nodeTypes={nodeTypes}
             colorMode="dark"
             fitView
             className="bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px]"
@@ -165,14 +216,13 @@ export default function VisualBuilder() {
         {/* Embedded Browser (Recording Mode) */}
         {isRecording && (
           <div className="w-1/2 h-full bg-slate-950 flex flex-col items-center justify-center p-4">
-             <div className="w-full h-full max-h-full bg-white rounded-xl shadow-2xl border border-slate-700 flex flex-col overflow-hidden relative">
+             <div className="w-full h-full max-h-full bg-white rounded-xl shadow-2xl border-4 border-dashed border-rose-500/40 flex flex-col overflow-hidden relative">
                
                {/* Rec Overlay */}
-               <div className="absolute top-16 left-0 right-0 bottom-0 z-50 bg-indigo-500/10 border-4 border-dashed border-indigo-500/30 flex items-center justify-center pointer-events-none">
-                 <div className="bg-slate-900/90 text-white px-6 py-4 rounded-xl shadow-2xl flex flex-col items-center border border-slate-700 pointer-events-auto">
-                    <MousePointerClick className="w-8 h-8 text-indigo-400 mb-3 animate-bounce" />
-                    <span className="text-sm font-semibold tracking-wide">Navegador RPA (Gravação)</span>
-                    <span className="text-xs text-slate-400 mt-1 max-w-[250px] text-center">Simulador Ativo: Clique nos campos abaixo para gravar a automação.</span>
+               <div className="absolute top-16 right-4 z-50 flex items-start justify-end pointer-events-none pt-4">
+                 <div className="bg-rose-500/10 text-rose-400 px-4 py-2 rounded-lg shadow-lg flex items-center border border-rose-500/20 pointer-events-auto backdrop-blur-md">
+                    <MonitorPlay className="w-4 h-4 mr-2 animate-pulse" />
+                    <span className="text-xs font-bold tracking-widest uppercase">Gravando Ações</span>
                  </div>
                </div>
 
