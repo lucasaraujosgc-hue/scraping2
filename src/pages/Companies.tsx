@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
 import { Plus, Search, Building2, ExternalLink, Upload, Download, FileSpreadsheet, X, Info } from 'lucide-react';
 
-const empresas = [
-  { id: 1, cpnj: '12.345.678/0001-99', razaoSocial: 'Tech Solutions S.A.', certificado: 'Ativo', status: 'Ativo' },
-  { id: 2, cpnj: '98.765.432/0001-11', razaoSocial: 'Comércio Alfa Ltda', certificado: 'Ativo', status: 'Ativo' },
-  { id: 3, cpnj: '45.678.901/0001-22', razaoSocial: 'Serviços Omega ME', certificado: 'Vence em 15d', status: 'Atenção' },
-];
-
 export default function Companies() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const empresas: any[] = [];
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-6">
@@ -46,56 +41,77 @@ export default function Companies() {
           </div>
         </div>
         
-        <table className="min-w-full divide-y divide-slate-800">
-          <thead className="bg-slate-950/50 backdrop-blur-sm">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                Razão Social / CNPJ
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                Certificado Padrão
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th scope="col" className="relative px-6 py-3">
-                <span className="sr-only">Ações</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-transparent divide-y divide-slate-800/60">
-            {empresas.map((empresa) => (
-              <tr key={empresa.id} className="hover:bg-slate-800/50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-slate-800 rounded-lg border border-slate-700">
-                      <Building2 className="h-5 w-5 text-slate-400" />
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-semibold text-slate-200">{empresa.razaoSocial}</div>
-                      <div className="text-xs text-slate-400 font-mono mt-0.5">{empresa.cpnj}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-0.5 inline-flex text-[11px] font-mono border rounded ${
-                    empresa.certificado.includes('Vence') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                  }`}>
-                    {empresa.certificado}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
-                  {empresa.status}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button className="text-indigo-400 hover:text-indigo-300 flex items-center ml-auto">
-                    Acessar <ExternalLink className="w-4 h-4 ml-1" />
-                  </button>
-                </td>
+        {empresas.length > 0 ? (
+          <table className="min-w-full divide-y divide-slate-800">
+            <thead className="bg-slate-950/50 backdrop-blur-sm">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  Razão Social / CNPJ
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  Certificado Padrão
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th scope="col" className="relative px-6 py-3">
+                  <span className="sr-only">Ações</span>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-transparent divide-y divide-slate-800/60">
+              {empresas.map((empresa) => (
+                <tr key={empresa.id} className="hover:bg-slate-800/50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-slate-800 rounded-lg border border-slate-700">
+                        <Building2 className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-semibold text-slate-200">{empresa.razaoSocial}</div>
+                        <div className="text-xs text-slate-400 font-mono mt-0.5">{empresa.cpnj}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-0.5 inline-flex text-[11px] font-mono border rounded ${
+                      empresa.certificado.includes('Vence') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    }`}>
+                      {empresa.certificado}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                    {empresa.status}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button className="text-indigo-400 hover:text-indigo-300 flex items-center ml-auto">
+                      Acessar <ExternalLink className="w-4 h-4 ml-1" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <div className="p-3 bg-slate-800/50 border border-slate-700/50 rounded-full mb-4">
+              <Building2 className="w-8 h-8 text-slate-500" />
+            </div>
+            <h3 className="text-slate-200 font-medium text-lg">Nenhuma empresa cadastrada</h3>
+            <p className="text-slate-400 text-sm mt-1 mb-6 max-w-sm">
+              Adicione empresas manualmente ou importe uma planilha (.xlsx) para começar.
+            </p>
+            <div className="flex space-x-3">
+              <button 
+                onClick={() => setIsImportModalOpen(true)}
+                className="inline-flex items-center px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700 transition"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Importar Planilha
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Import Modal */}

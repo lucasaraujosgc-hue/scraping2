@@ -5,6 +5,8 @@ import Companies from './pages/Companies';
 import Certificates from './pages/Certificates';
 import Scrapers from './pages/Scrapers';
 import VisualBuilder from './pages/VisualBuilder';
+import Schedules from './pages/Schedules';
+import Files from './pages/Files';
 
 export default function App() {
   return (
@@ -16,6 +18,8 @@ export default function App() {
           <Route path="certificados" element={<Certificates />} />
           <Route path="scrapers" element={<Scrapers />} />
           <Route path="scrapers/builder/:id" element={<VisualBuilder />} />
+          <Route path="agendamentos" element={<Schedules />} />
+          <Route path="arquivos" element={<Files />} />
         </Route>
       </Routes>
     </BrowserRouter>

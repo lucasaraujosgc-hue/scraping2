@@ -10,28 +10,38 @@ import {
   Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { ArrowLeft, Play, Save, CheckCircle2, MonitorPlay, MousePointerClick, X, Globe, Copy, RefreshCcw } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowLeft, Play, Save, CheckCircle2, MonitorPlay, MousePointerClick, X, Globe, Copy, RefreshCcw, Download, FileCode2 } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { useAppStore } from '../store';
 
 const initialNodes = [
-  { id: '1', position: { x: 50, y: 50 }, data: { label: 'Iniciar Execução' }, type: 'input' },
-  { id: '2', position: { x: 50, y: 150 }, data: { label: 'Abrir URL (Receita)' } },
-  { id: '3', position: { x: 50, y: 250 }, data: { label: 'Preencher CNPJ: {{cnpj}}' } },
+  { id: '1', position: { x: 50, y: 50 }, data: { label: 'Iniciar RPA' }, type: 'input' },
+  { id: '2', position: { x: 50, y: 150 }, data: { label: 'Abrir URL' } },
+  { id: '3', position: { x: 50, y: 250 }, data: { label: 'Aguardar (Pausa)' } },
+  { id: '4', position: { x: 50, y: 350 }, data: { label: 'Preencher: {{cnpj}}' } },
+  { id: '5', position: { x: 50, y: 450 }, data: { label: 'Intervenção: Captcha' } },
+  { id: '6', position: { x: 50, y: 550 }, data: { label: 'Baixar PDF' }, type: 'output' },
 ];
 
 const initialEdges = [
   { id: 'e1-2', source: '1', target: '2' },
   { id: 'e2-3', source: '2', target: '3' },
+  { id: 'e3-4', source: '3', target: '4' },
+  { id: 'e4-5', source: '4', target: '5' },
+  { id: 'e5-6', source: '5', target: '6' },
 ];
 
 export default function VisualBuilder() {
+  const { id } = useParams();
+  const getScraperName = useAppStore(state => state.scrapers.find(s => s.id === id)?.name) || 'Novo Scraper';
+  
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [saved, setSaved] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
+    (params: any) => setEdges((eds) => addEdge(params, eds)),
     [setEdges],
   );
 
@@ -48,8 +58,7 @@ export default function VisualBuilder() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="h-6 w-px bg-slate-800" />
-          <h1 className="text-lg font-semibold text-white">Consulta CND Receita Federal</h1>
-          <span className="px-2 py-0.5 rounded border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-widest hidden md:inline-block">Usa Certificado</span>
+          <h1 className="text-lg font-semibold text-white">{getScraperName}</h1>
         </div>
         <div className="flex items-center space-x-3">
           {saved && <span className="text-emerald-400 flex items-center text-sm font-medium"><CheckCircle2 className="w-4 h-4 mr-1" /> Salvo</span>}
@@ -96,21 +105,25 @@ export default function VisualBuilder() {
             <Controls className="bg-slate-900 border-slate-800 fill-slate-400" />
             <Background variant="dots" gap={12} size={1} color="#334155" />
             
-            <Panel position="top-right" className="bg-slate-900 p-4 shadow-xl rounded-2xl border border-slate-800 w-64 m-4">
-              <h3 className="text-sm font-semibold text-white border-b border-slate-800 pb-2 mb-3">Adicionar Bloco</h3>
+            <Panel position="top-right" className="bg-slate-900 p-4 shadow-xl rounded-2xl border border-slate-800 w-64 m-4 max-h-[80vh] overflow-y-auto">
+              <h3 className="text-sm font-semibold text-white border-b border-slate-800 pb-2 mb-3">Adicionar Ação (RPA)</h3>
               <div className="space-y-2">
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Navegação</div>
-                <button className="w-full text-left px-3 py-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-sm text-slate-300 transition">🌍 Abrir URL</button>
-                <button className="w-full text-left px-3 py-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-sm text-slate-300 transition">🖱️ Clicar Elemento</button>
-                <button className="w-full text-left px-3 py-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-sm text-slate-300 transition">⌨️ Digitar Texto</button>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-4">Navegação Base</div>
+                <button className="w-full text-left px-3 py-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-sm text-slate-300 transition flex items-center"><Globe className="w-4 h-4 mr-2 text-slate-400" /> Abrir URL</button>
+                <button className="w-full text-left px-3 py-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-sm text-slate-300 transition flex items-center"><MousePointerClick className="w-4 h-4 mr-2 text-slate-400" /> Clicar Elemento</button>
+                <button className="w-full text-left px-3 py-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-sm text-slate-300 transition flex items-center"><FileCode2 className="w-4 h-4 mr-2 text-slate-400" /> Inserir Texto</button>
+                <button className="w-full text-left px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-lg text-sm text-amber-400 transition flex items-center"><RefreshCcw className="w-4 h-4 mr-2 text-amber-400" /> Aguardar (Pausa)</button>
                 
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-4">Captura</div>
-                <button className="w-full text-left px-3 py-2 bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/20 rounded-lg text-sm text-indigo-400 transition">📄 Capturar PDF</button>
-                <button className="w-full text-left px-3 py-2 bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/20 rounded-lg text-sm text-indigo-400 transition">🧩 OCR / Tabela</button>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-4">Intervenção Humana</div>
+                <button className="w-full text-left px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg text-sm text-rose-400 transition flex items-center"><Play className="w-4 h-4 mr-2 text-rose-400" /> Resolver Captcha</button>
 
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-4">Variáveis</div>
-                <code className="block w-full px-2 py-1.5 bg-slate-950 border border-slate-800 rounded text-[11px] font-mono text-emerald-400 mt-1 mb-1">{`{{empresa.cnpj}}`}</code>
-                <code className="block w-full px-2 py-1.5 bg-slate-950 border border-slate-800 rounded text-[11px] font-mono text-emerald-400 mt-1 mb-1">{`{{empresa.senha}}`}</code>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-4">Arquivos e Captura</div>
+                <button className="w-full text-left px-3 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg text-sm text-emerald-400 transition flex items-center"><Download className="w-4 h-4 mr-2 text-emerald-400" /> Baixar Documento</button>
+                <button className="w-full text-left px-3 py-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-sm text-slate-300 transition flex items-center"><Copy className="w-4 h-4 mr-2 text-slate-400" /> Extrair Texto</button>
+
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-4">Banco de Dados (DB)</div>
+                <code className="block w-full px-2 py-1.5 bg-slate-950 border border-slate-800 rounded text-[11px] font-mono text-indigo-400 mt-1 mb-1">{`{{empresa.cnpj}}`}</code>
+                <code className="block w-full px-2 py-1.5 bg-slate-950 border border-slate-800 rounded text-[11px] font-mono text-indigo-400 mt-1 mb-1">{`{{empresa.senha}}`}</code>
               </div>
             </Panel>
           </ReactFlow>
@@ -125,8 +138,8 @@ export default function VisualBuilder() {
                <div className="absolute top-16 left-0 right-0 bottom-0 z-50 bg-indigo-500/10 border-4 border-dashed border-indigo-500/30 flex items-center justify-center pointer-events-none">
                  <div className="bg-slate-900/90 text-white px-6 py-4 rounded-xl shadow-2xl flex flex-col items-center border border-slate-700">
                     <MousePointerClick className="w-8 h-8 text-indigo-400 mb-3 animate-bounce" />
-                    <span className="text-sm font-semibold tracking-wide">Navegador Interativo (Modo Gravação)</span>
-                    <span className="text-xs text-slate-400 mt-1 max-w-[250px] text-center">Clique em qualquer elemento abaixo para adicionar um bloco de ação no fluxo ao lado.</span>
+                    <span className="text-sm font-semibold tracking-wide">Navegador RPA (Gravação)</span>
+                    <span className="text-xs text-slate-400 mt-1 max-w-[250px] text-center">Navegue livremente. Ao clicar ou preencher, a ação será gravada no fluxo.</span>
                  </div>
                </div>
 

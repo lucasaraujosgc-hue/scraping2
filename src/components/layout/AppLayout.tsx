@@ -20,7 +20,7 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Empresas', href: '/empresas', icon: Building2 },
   { name: 'Certificados', href: '/certificados', icon: ShieldCheck },
-  { name: 'Automações', href: '/scrapers', icon: Bot },
+  { name: 'Automações (RPA)', href: '/scrapers', icon: Bot },
   { name: 'Agendamentos', href: '/agendamentos', icon: CalendarClock },
   { name: 'Arquivos', href: '/arquivos', icon: Files },
 ];

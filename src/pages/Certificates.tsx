@@ -24,29 +24,6 @@ export default function Certificates() {
             </button>
           </div>
         </div>
-
-        {/* Dummy Certificate Card */}
-        <div className="bg-slate-900 rounded-2xl shadow-xl border border-slate-800 overflow-hidden col-span-1 md:col-span-1 lg:col-span-1">
-          <div className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2 text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-xs font-mono">
-                <Shield className="w-3.5 h-3.5" />
-                <span>Válido</span>
-              </div>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">e-CNPJ A1</span>
-            </div>
-            <h3 className="font-semibold text-slate-200 truncate" title="TECH SOLUTIONS SA">TECH SOLUTIONS SA</h3>
-            <p className="text-sm font-mono text-slate-500 mt-1">12.345.678/0001-99</p>
-            
-            <div className="mt-6 pt-4 border-t border-slate-800 flex justify-between items-end">
-              <div>
-                <p className="text-[10px] uppercase font-bold text-slate-500">Vencimento</p>
-                <p className="text-sm font-semibold text-slate-300">22/10/2026</p>
-              </div>
-              <button className="text-indigo-400 text-sm font-medium hover:text-indigo-300 transition">Visualizar</button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
